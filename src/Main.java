@@ -5,6 +5,7 @@ import java.util.Scanner;
 
 public class Main {
     //just
+    //just2
     static int maxBurgerStock = 50;
     static int burgersAvailable = 50;
     static Scanner scanner = new Scanner(System.in);
