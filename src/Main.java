@@ -1,34 +1,31 @@
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Scanner;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.*;
 
 public class Main {
-    //just
-    //just2
     static int maxBurgerStock = 50;
     static int burgersAvailable = 50;
     static Scanner scanner = new Scanner(System.in);
     static String[] queue1 = {"X", "X"};
     static String[] queue2 = {"X", "X", "X"};
     static String[] queue3 = {"X", "X", "X", "X", "X"};
-
-    String[] allCustomers = {};
     //X – Not Occupied O – Occupied
     static String[] queue1Customers = {"X", "X"};
     static String[] queue2Customers = {"X", "X", "X"};
     static String[] queue3Customers = {"X", "X", "X", "X", "X"};
-
+    static boolean isRunning = true;
     public static void main(String[] args) {
-        boolean isRunning = true;
+
         while (isRunning) {
             System.out.println("""
                     100 or VFQ: View all Queues
                     101 or VEQ: View all Empty Queues.
                     102 or ACQ: Add customer to a Queue.
-                    103 or RCQ: Remove a customer from a Queue. (From a specific location)
+                    103 or RCQ: Remove a customer from a Queue.
                     104 or PCQ: Remove a served customer.
-                    105 or VCS: View Customers Sorted in alphabetical order (Do not use library sort routine)
+                    105 or VCS: View Customers Sorted .
                     106 or SPD: Store Program Data into file.
                     107 or LPD: Load Program Data from file.
                     108 or STK: View Remaining burgers Stock.
@@ -41,15 +38,9 @@ public class Main {
                 case "102", "ACQ" -> addACustomer();
                 case "103", "RCQ" -> removeACustomerSpecific();
                 case "104", "PCQ" -> removeAServedCustomer();
-                case "105", "VCS" -> {
-                    System.out.println("105");
-                }
-                case "106", "SPD" -> {
-                    System.out.println("106");
-                }
-                case "107", "LPD" -> {
-                    System.out.println("107");
-                }
+                case "105", "VCS" -> sortMethod();
+                case "106", "SPD" -> storeData();
+                case "107", "LPD" -> readData();
                 case "108", "STK" -> System.out.println(burgersAvailable);
                 case "109", "AFS" -> addBurgers();
                 case "999", "EXT" -> isRunning = false;
@@ -64,19 +55,18 @@ public class Main {
     public static void printQueue() {
         System.out.println("*".repeat(16) + "\n" + "*   cashiers   *" + "\n" + "*".repeat(16));
         for (int i = 0; i <= 5; i++) {
-            if (i < 2) System.out.print("  " + queue1[i] + " ");
-            if (i < 3) {
+            if (i < queue1.length) System.out.print("  " + queue1[i] + " ");
+            if (i < queue2.length) {
                 if (i == 2) System.out.print("       " + queue2[i] + "   ");
                 else System.out.print("   " + queue2[i] + "   ");
             }
-            if (i < 5) {
+            if (i < queue3.length) {
                 if (i >= 3) System.out.print("            " + queue3[i] + " ");
                 else System.out.print(" " + queue3[i] + " ");
             }
             System.out.println();
         }
     }
-
     public static void printEmptyQueues(){
 
         System.out.println("*".repeat(16) + "\n" + "*   cashiers   *" + "\n" + "*".repeat(16));
@@ -95,7 +85,6 @@ public class Main {
         else if (queueNum == 2) queue2[i] = "O";
         else if (queueNum == 3) queue3[i] = "O";
     }
-
     //customer related methods
     public static void addCustomers(String name, int queueNum) {// this method checks if we can add a customer and adding a customer.
         if (queueNum == 1 && arrayConverterAndXFinder(queue1Customers)) CustomerRelated(queueNum, queue1Customers, name);
@@ -105,7 +94,6 @@ public class Main {
         else if (queueNum == 3 && arrayConverterAndXFinder(queue3Customers)) CustomerRelated(queueNum, queue3Customers, name);
         else if (queueNum == 3) System.out.println("Queue 3 is full. ");
     }
-
     public static void CustomerRelated(int queueNum, String[] Queue, String name) {//this method update the changes when adding a customer.
         for (int i = 0; i < Queue.length; i++) {
             if (Objects.equals(Queue[i], "X")) {
@@ -116,50 +104,39 @@ public class Main {
             }
         }
     }
-
-    public static void addACustomer() {//this method prompts the details and verify the detailes
-        System.out.println("Enter a queue number: ");
-        String queueNum = scanner.next();
-        System.out.println("Enter the Name of the customer: ");
-        String name = scanner.next();
-        if (!isInteger(queueNum, 4)) {
-            System.out.println("Enter valid Queue number ");
-        } else if (isInteger(queueNum, 4)) {
-            addCustomers(name, Integer.parseInt(queueNum));
-        }
+    public static void addACustomer() {//this method prompts the details and verify the details
+            if (burgersAvailable>=10) {
+                System.out.println("Enter a queue number: ");
+                String queueNum = scanner.next();
+                System.out.println("Enter the Name of the customer: ");
+                String name = scanner.next();
+                if (!isInteger(queueNum, 4)) {
+                    System.out.println("Enter valid Queue number ");
+                } else if (isInteger(queueNum, 4)) {
+                    addCustomers(name, Integer.parseInt(queueNum));
+                }
+            }else {
+                System.out.println("Add burgers to the stock.");
+            }
     }
-
-
-    public static void removeACustomerSpecific(){
-        System.out.println("Enter the Queue number :");
-        String queueNum = scanner.next();
-        if (!isInteger(queueNum,4)) {
-            System.out.println("Enter valid Queue number ");
-        }else if (Objects.equals(queueNum, String.valueOf(1))){
+    public static void removeACustomerSpecific() {
+            System.out.println("Enter the Queue number :");
+            String queueNumber= scanner.next();
             System.out.println("Enter which position you wanted to remove ");
-            String position = scanner.next();
-            if (isInteger(position,3)){
-                removeACustomer(Integer.parseInt(position),Integer.parseInt(queueNum));
+            String position =scanner.next();
+            if (isInteger(queueNumber,4) &&isInteger(position,6)) {
+                if (Integer.parseInt(queueNumber) == 1 && Integer.parseInt(position) <= 3) {
+                    removeACustomer(Integer.parseInt(position), 1);
+                } else if (Integer.parseInt(queueNumber) == 2 && Integer.parseInt(position) <= 4) {
+                    removeACustomer(Integer.parseInt(position), 2);
+                } else if (Integer.parseInt(queueNumber) == 3 && Integer.parseInt(position) <= 6) {
+                    removeACustomer(Integer.parseInt(position), 3);
+                } else {
+                    System.out.println("position not found for the Queue.");
+                }
             }else {
-                System.out.println("position not found");
+                System.out.println("Enter a valid Queue Number and valid Position.");
             }
-        }else if (Objects.equals(queueNum, String.valueOf(2))){
-            System.out.println("Enter which position you wanted to remove ");
-            String position = scanner.next();
-            if (isInteger(position,4)){
-                removeACustomer(Integer.parseInt(position),Integer.parseInt(queueNum));
-            }else {
-                System.out.println("position not found");
-            }
-        }else if (Objects.equals(queueNum, String.valueOf(3))){
-            System.out.println("Enter which position you wanted to remove ");
-            String position = scanner.next();
-            if (isInteger(position,6)){
-                removeACustomer(Integer.parseInt(position),Integer.parseInt(queueNum));
-            }else {
-                System.out.println("position not found");
-            }
-        }
     }
     public static void removeAServedCustomer(){
         System.out.println("Enter a queue number: ");
@@ -192,7 +169,6 @@ public class Main {
             }
 
         }
-        queueCustomers[position - 1] = "X";
         for (int i = position - 1; i < queueCustomers.length - 1; i++) {
             queueCustomers[i] = queueCustomers[i + 1];
         }
@@ -200,10 +176,10 @@ public class Main {
             queue[i] = queue[i + 1];
         }
         queue[queue.length - 1] = "X";
+        queueCustomers[queueCustomers.length - 1] = "X";
     }
 
     //burger related methods
-
     public static void addBurgers(){
         System.out.println("how many burgers need to add to the stock?");
         int numOfBurgers= scanner.nextInt();
@@ -215,6 +191,74 @@ public class Main {
     }
     public static void removeBurgers(){
         burgersAvailable -= 5;
+    }
+    static File file;
+    public static void createFile(){
+        try {
+            file = new File("CustomerDetails.txt");
+            if (!file.createNewFile()) System.out.println();
+        }
+        catch (IOException e) {
+            System.out.println("An error has occurred.");
+            e.printStackTrace();
+        }
+    }
+    public static void storeData(){
+        createFile();
+        try {
+            FileWriter myWriter = new FileWriter("CustomerDetails.txt");
+            for (int i= 0;i<queue1Customers.length;i++) {
+                if (!Objects.equals(queue1Customers[i], "X")){
+                    myWriter.write("Queue : 1 -> Position : "+(i+1)+" "+queue1Customers[i]+"\n");
+                }
+            }
+            for (int i= 0;i<queue2Customers.length;i++) {
+                if (!Objects.equals(queue2Customers[i], "X")){
+                    myWriter.write("Queue : 2 -> Position : "+i+1+" "+queue2Customers[i]+"\n");
+                }
+            }
+            for (int i= 0;i<queue3Customers.length;i++) {
+                if (!Objects.equals(queue3Customers[i], "X")){
+                    myWriter.write("Queue : 3 -> Position : "+i+1+" "+queue3Customers[i]+"\n");
+                }
+            }
+            myWriter.close();
+            System.out.println("Successfully wrote to the file.");
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+    }
+    public static void readData(){
+        try {
+            Scanner myReader = new Scanner(file);
+            while (myReader.hasNextLine()) {
+                String data = myReader.nextLine();
+                System.out.println(data);
+            }
+            myReader.close();
+        } catch (NullPointerException | FileNotFoundException e) {
+            System.out.println("data not stored to file");
+        }
+    }
+    public static void sortMethod(){
+        String[] combinedArray = Arrays.copyOf(queue1Customers, queue1Customers.length + queue2Customers.length + queue3Customers.length);
+        System.arraycopy(queue2Customers, 0, combinedArray, queue1Customers.length, queue2Customers.length);
+        System.arraycopy(queue3Customers, 0, combinedArray, queue1Customers.length + queue2Customers.length, queue3Customers.length);
+        for (int i = 0; i < combinedArray.length; i++) {
+            for (int j = i + 1; j < combinedArray.length; j++) {
+                if (combinedArray[i].compareToIgnoreCase(combinedArray[j]) > 0) {
+                    String temp = combinedArray[i];
+                    combinedArray[i] = combinedArray[j];
+                    combinedArray[j] = temp;
+                }
+            }
+        }
+        for (String s : combinedArray) {
+            if (!Objects.equals(s, "X")) {
+                System.out.println(s);
+            }
+        }
     }
     //other methods
     private static boolean isInteger(String x ,int maxValue) {
